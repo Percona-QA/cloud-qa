@@ -1,0 +1,16 @@
+apiVersion: psmdb.percona.com/v1
+kind: PerconaServerMongoDBRestore
+metadata:
+  name: restore1
+spec:
+  clusterName: my-cluster-name
+  pitr:
+    type: date
+    date: 2021-05-26 10:31:36
+  backupSource:
+    destination: s3://tomislav-backup-test/2021-05-26T08:50:47Z
+    s3:
+      credentialsSecret: my-cluster-name-backup-s3
+      region: us-west-2
+      bucket: tomislav-backup-test
+      endpointUrl: https://s3.us-west-2.amazonaws.com/
