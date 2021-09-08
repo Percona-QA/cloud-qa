@@ -33,7 +33,7 @@ main() {
 
   local pod=$(kubectl get pods -l name=percona-server-mongodb-operator --output name ${namespace:+--namespace $namespace})
   if [ ! -z "${pod}" ]; then
-    kubectl logs ${pod} ${namespace}
+    kubectl logs ${pod} ${namespace:+--namespace $namespace}
   else
     echo "Operator pod is not found in the namespace!"
     exit 1
