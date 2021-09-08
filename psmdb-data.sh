@@ -5,7 +5,7 @@ source ${src_dir}/functions
 
 usage() {
   if [ $# -ne 2 ]; then
-    echo "Usage:  psmdb-client.sh --namespace <ns> --cluster <cluster>"
+    echo "Usage:  psmdb-add-data.sh --namespace <ns> --cluster <cluster> --insert/--rw --database <db>"
     exit 1
   fi
 }
@@ -18,7 +18,8 @@ main() {
   local password=""
   local endpoint=""
   local replset=""
-  local database="admin"
+  local database="ycsb_test"
+  local command=""
 
   while [[ $# -gt 0 ]]
   do
@@ -58,6 +59,19 @@ main() {
         shift
         shift
         ;;
+      -d|--database)
+        database="$2"
+        shift
+        shift
+        ;;
+      -i|--insert)
+        command="insert"
+        shift
+        ;;
+      -w|--rw)
+        command="rw"
+        shift
+        ;;
       *)
         echo "unknown flag or option ${key}"
         usage
@@ -65,6 +79,11 @@ main() {
         ;;
       esac
   done
+
+  if [[ -z "${command}" ]]; then
+    echo "Please specify either --insert or --rw parameter!"
+    exit 1
+  fi
 
   if [[ -z "${namespace}" ]]; then
     namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
@@ -82,12 +101,19 @@ main() {
   fi
 
   mongodb_uri=$(get_mongodb_uri "${namespace}" "${cluster}" "${replset}" "${username}" "${password}" "${endpoint}" "${database}")
-  if [[ ! -z "${mongodb_uri}" ]]; then
-    set -x
-    kubectl run -i --rm --tty percona-client-${RANDOM} --image=percona/percona-server-mongodb:4.4 --restart=Never -- mongo "${mongodb_uri}"
-  else
+  if [[ -z "${mongodb_uri}" ]]; then
     echo "Error getting MongoDB URI!"
     exit 1
+  fi
+
+  if [[ "${command}" == "insert"  ]]; then
+    echo "##### Running read/write workload on database: ${database} #####"
+    set -x
+    kubectl run -it --rm ycsb-client --image=plavi/test:ycsb --restart=Never -- load mongodb -s -P /ycsb/workloads/workloada -p recordcount=100000 -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
+  elif [[ "${command}" == "rw" ]]; then
+    echo "##### Running insert workload on database: ${database} #####"
+    set -x
+    kubectl run -it --rm ycsb-client --image=plavi/test:ycsb --restart=Never -- run mongodb -s -P /ycsb/workloads/workloadb -p recordcount=100000 -p operationcount=1000000 -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
   fi
 }
 

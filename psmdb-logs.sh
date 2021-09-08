@@ -8,8 +8,9 @@ usage() {
 }
 
 main() {
-
   local namespace=""
+  local pod=""
+
   while [[ $# -gt 0 ]]
   do
     key="$1"
@@ -31,7 +32,7 @@ main() {
       esac
   done
 
-  local pod=$(kubectl get pods -l name=percona-server-mongodb-operator --output name ${namespace:+--namespace $namespace})
+  pod=$(kubectl get pods -l name=percona-server-mongodb-operator --output name ${namespace:+--namespace $namespace})
   if [ ! -z "${pod}" ]; then
     kubectl logs ${pod} ${namespace:+--namespace $namespace}
   else
