@@ -1,51 +1,51 @@
 #!/usr/bin/env bash
 
 function get_mongodb_uri() {
-  local namespace=$1
-  local cluster=$2
-  local replset=$3
-  local username=$4
-  local password=$5
-  local endpoint=$6
-  local database=$7
-  local user_secrets=""
-  local sharding=""
-  local replset_exposed=""
+	local namespace=$1
+	local cluster=$2
+	local replset=$3
+	local username=$4
+	local password=$5
+	local endpoint=$6
+	local database=$7
+	local user_secrets=""
+	local sharding=""
+	local replset_exposed=""
 
-  if [[ -z "${password}" && "${username}" == "backup" ]]; then
-    user_secrets=$(kubectl get psmdb ${cluster} -ojson | jq -r ".spec.secrets.users")
-    password=$(kubectl get secrets ${user_secrets} -o jsonpath="{.data.MONGODB_BACKUP_PASSWORD}" ${namespace:+--namespace $namespace} | base64 --decode)
-  elif [[ ! -z "${password}" && "${username}" == "backup" ]]; then
-    echo "When specifying password please specify --user also." >&2
-    return 1
-  fi
+	if [[ -z ${password} && ${username} == "backup" ]]; then
+		user_secrets=$(kubectl get psmdb "${cluster}" -ojson | jq -r ".spec.secrets.users")
+		password=$(kubectl get secrets "${user_secrets}" -o jsonpath="{.data.MONGODB_BACKUP_PASSWORD}" ${namespace:+--namespace $namespace} | base64 --decode)
+	elif [[ -n ${password} && ${username} == "backup" ]]; then
+		echo "When specifying password please specify --user also." >&2
+		return 1
+	fi
 
-  sharding=$(kubectl get psmdb ${cluster} -o jsonpath='{.spec.sharding.enabled}')
-  if [[ "${sharding}" == "false" && -z "${replset}" ]]; then
-    replset=$(kubectl get psmdb ${cluster} -o jsonpath='{.spec.replsets[0].name}' ${namespace:+--namespace $namespace})
-  fi
+	sharding=$(kubectl get psmdb "${cluster}" -o jsonpath='{.spec.sharding.enabled}')
+	if [[ ${sharding} == "false" && -z ${replset} ]]; then
+		replset=$(kubectl get psmdb "${cluster}" -o jsonpath='{.spec.replsets[0].name}' ${namespace:+--namespace $namespace})
+	fi
 
-  if [[ ! -z "${replset}" ]]; then
-    if [[ "${replset}" != "cfg" ]]; then
-      replset_exposed=$(kubectl get psmdb ${cluster} -ojson | jq -r ".spec.replsets | select(.[].name | contains (\"${replset}\")) | .[].expose.enabled")
-    else
-      replset_exposed=$(kubectl get psmdb ${cluster} -ojson | jq -r ".spec.sharding.configsvrReplSet.expose.enabled")
-    fi
+	if [[ -n ${replset} ]]; then
+		if [[ ${replset} != "cfg" ]]; then
+			replset_exposed=$(kubectl get psmdb "${cluster}" -ojson | jq -r ".spec.replsets | select(.[].name | contains (\"${replset}\")) | .[].expose.enabled" | head -n1)
+		else
+			replset_exposed=$(kubectl get psmdb "${cluster}" -ojson | jq -r ".spec.sharding.configsvrReplSet.expose.enabled")
+		fi
 
-    if [[ -z "${replset_exposed}" ]]; then
-      echo "Replica set name not found!" >&2
-      return 1
-    fi
-  fi
+		if [[ -z ${replset_exposed} ]]; then
+			echo "Replica set name not found!" >&2
+			return 1
+		fi
+	fi
 
-  if [[ -z "${endpoint}" ]]; then
-    endpoint=$(kubectl get psmdb ${cluster} -o jsonpath="{.status.host}" ${namespace:+--namespace $namespace})
-    if [[ ! -z "${replset}" && "${replset_exposed}" == "false" ]]; then
-      endpoint="${cluster}-${replset}.${namespace}.svc.cluster.local"
-    elif [[ ! -z "${replset}" && "${replset_exposed}" == "true" ]]; then
-      endpoint="${cluster}-${replset}-0.${namespace}.svc.cluster.local"
-    fi
-  fi
+	if [[ -z ${endpoint} ]]; then
+		endpoint=$(kubectl get psmdb "${cluster}" -o jsonpath="{.status.host}" ${namespace:+--namespace $namespace})
+		if [[ -n ${replset} && ${replset_exposed} == "false" ]]; then
+			endpoint="${cluster}-${replset}.${namespace}.svc.cluster.local"
+		elif [[ -n ${replset} && ${replset_exposed} == "true" ]]; then
+			endpoint="${cluster}-${replset}-0.${namespace}.svc.cluster.local"
+		fi
+	fi
 
-  echo "mongodb://${username}:${password}@${endpoint}/${database}?ssl=false&authSource=admin${replset:+&replicaSet=$replset}"
+	echo "mongodb://${username}:${password}@${endpoint}/${database}?ssl=false&authSource=admin${replset:+&replicaSet=$replset}"
 }
