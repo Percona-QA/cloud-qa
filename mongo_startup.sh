@@ -620,12 +620,15 @@ if [ "${LAYOUT}" == "sh" ]; then
   CFGPORT=27027
   RS1PORT=27018
   RS2PORT=28018
+  RS3PORT=29018
   SHNAME="sh1"
   RS1NAME="rs1"
   RS2NAME="rs2"
+  RS3NAME="rs3"
   CFGRSNAME="config"
   mkdir -p "${WORKDIR}/${RS1NAME}"
   mkdir -p "${WORKDIR}/${RS2NAME}"
+  mkdir -p "${WORKDIR}/${RS3NAME}"
   mkdir -p "${WORKDIR}/${CFGRSNAME}"
   mkdir -p "${WORKDIR}/${SHNAME}"
 
@@ -646,6 +649,7 @@ if [ "${LAYOUT}" == "sh" ]; then
   # setup 2 data replica sets
   start_replicaset "${WORKDIR}/${RS1NAME}" "${RS1NAME}" "${RS1PORT}" "--shardsvr ${MONGOD_EXTRA}"
   start_replicaset "${WORKDIR}/${RS2NAME}" "${RS2NAME}" "${RS2PORT}" "--shardsvr ${MONGOD_EXTRA}"
+  start_replicaset "${WORKDIR}/${RS3NAME}" "${RS3NAME}" "${RS3PORT}" "--shardsvr ${MONGOD_EXTRA}"
 
   # create managing scripts
   echo "#!/usr/bin/env bash" > ${WORKDIR}/${SHNAME}/start_mongos.sh
@@ -659,6 +663,7 @@ if [ "${LAYOUT}" == "sh" ]; then
   echo "${WORKDIR}/${SHNAME}/stop_mongos.sh" >> ${WORKDIR}/stop_mongodb.sh
   echo "${WORKDIR}/${RS1NAME}/stop_mongodb.sh" >> ${WORKDIR}/stop_mongodb.sh
   echo "${WORKDIR}/${RS2NAME}/stop_mongodb.sh" >> ${WORKDIR}/stop_mongodb.sh
+  echo "${WORKDIR}/${RS3NAME}/stop_mongodb.sh" >> ${WORKDIR}/stop_mongodb.sh
   echo "${WORKDIR}/${CFGRSNAME}/stop_mongodb.sh" >> ${WORKDIR}/stop_mongodb.sh
   echo "#!/usr/bin/env bash" > ${WORKDIR}/${SHNAME}/stop_mongos.sh
   echo "source ${WORKDIR}/COMMON" >> ${WORKDIR}/${SHNAME}/stop_mongos.sh
@@ -669,6 +674,7 @@ if [ "${LAYOUT}" == "sh" ]; then
   echo "${WORKDIR}/${CFGRSNAME}/start_mongodb.sh" >> ${WORKDIR}/start_mongodb.sh
   echo "${WORKDIR}/${RS1NAME}/start_mongodb.sh" >> ${WORKDIR}/start_mongodb.sh
   echo "${WORKDIR}/${RS2NAME}/start_mongodb.sh" >> ${WORKDIR}/start_mongodb.sh
+  echo "${WORKDIR}/${RS3NAME}/start_mongodb.sh" >> ${WORKDIR}/start_mongodb.sh
   echo "${WORKDIR}/${SHNAME}/start_mongos.sh" >> ${WORKDIR}/start_mongodb.sh
   chmod +x ${WORKDIR}/${SHNAME}/start_mongos.sh
   chmod +x ${WORKDIR}/${SHNAME}/stop_mongos.sh
@@ -687,6 +693,7 @@ if [ "${LAYOUT}" == "sh" ]; then
   sleep 20
   ${BINDIR}/mongo ${HOST}:${SHPORT} --quiet --eval "sh.addShard(\"${RS1NAME}/${HOST}:${RS1PORT}\")" ${AUTH} ${SSL_CLIENT}
   ${BINDIR}/mongo ${HOST}:${SHPORT} --quiet --eval "sh.addShard(\"${RS2NAME}/${HOST}:${RS2PORT}\")" ${AUTH} ${SSL_CLIENT}
+  ${BINDIR}/mongo ${HOST}:${SHPORT} --quiet --eval "sh.addShard(\"${RS3NAME}/${HOST}:${RS3PORT}\")" ${AUTH} ${SSL_CLIENT}
   echo -e "\n>>> Enable sharding on specific database with: sh.enableSharding(\"<database>\") <<<"
   echo -e ">>> Shard a collection with: sh.shardCollection(\"<database>.<collection>\", { <key> : <direction> } ) <<<\n"
 

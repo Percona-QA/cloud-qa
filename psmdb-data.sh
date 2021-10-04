@@ -104,7 +104,7 @@ main() {
 	fi
 
 	if [[ ${command} == "insert" ]]; then
-		echo "##### Running read/write workload on database: ${database} #####"
+		echo "##### Running ${command} workload on database: ${database} #####"
 		set -x
 		kubectl run -it --rm ycsb-client --image=plavi/test:ycsb --restart=Never -- load mongodb -s -P /ycsb/workloads/workloada -p recordcount=100000 -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
 	elif [[ ${command} == "rw" ]]; then

@@ -7,6 +7,7 @@ tmp_file2=/tmp/check-missing-tests-2.log
 
 function usage() {
   echo "Usage: $(basename $0) <psmdb|pxc|pgo> <full_path_to_jenkinsfile>"
+  echo "This script needs to be run from jenkins-pipelines/cloud/jenkins folder!"
 }
 
 function extract_tests() {
