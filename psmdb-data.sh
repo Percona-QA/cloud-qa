@@ -4,7 +4,7 @@ src_dir=$(realpath $(dirname $0))
 source ${src_dir}/functions
 
 usage() {
-	echo "Usage:  psmdb-add-data.sh --namespace <ns> --cluster <cluster> --insert/--rw --database <db>"
+	echo "Usage:  $(basename "$0") --namespace <ns> --cluster <cluster> --insert/--rw --database <db>"
 	exit 1
 }
 
@@ -105,12 +105,12 @@ main() {
 
 	if [[ ${command} == "insert" ]]; then
 		echo "##### Running ${command} workload on database: ${database} #####"
-		set -x
-		kubectl run -it --rm ycsb-client --image=plavi/test:ycsb --restart=Never -- load mongodb -s -P /ycsb/workloads/workloada -p recordcount=100000 -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
+		echo "mongodb_uri: ${mongodb_uri}"
+		kubectl run -it --rm ycsb-client-${RANDOM} --image=plavi/test:ycsb --restart=Never -- load mongodb -s -P /ycsb/workloads/workloada -p recordcount=100000 -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
 	elif [[ ${command} == "rw" ]]; then
-		echo "##### Running insert workload on database: ${database} #####"
-		set -x
-		kubectl run -it --rm ycsb-client --image=plavi/test:ycsb --restart=Never -- run mongodb -s -P /ycsb/workloads/workloadb -p recordcount=100000 -p operationcount=1000000 -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
+		echo "##### Running ${command} workload on database: ${database} #####"
+		echo "mongodb_uri: ${mongodb_uri}"
+		kubectl run -it --rm ycsb-client-${RANDOM} --image=plavi/test:ycsb --restart=Never -- run mongodb -s -P /ycsb/workloads/workloadb -p recordcount=100000 -p operationcount=1000000 -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
 	fi
 }
 
