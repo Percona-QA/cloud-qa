@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Transfer ssl certificates and users from one cluster to another
 
-function transfer-managed-config() {
+transfer-managed-config() {
     local managed=$1
     local unmanaged=$2
     local skipCertManager=$3

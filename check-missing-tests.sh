@@ -5,12 +5,12 @@ cloud="openshift eks lke gke minikube"
 tmp_file1=/tmp/check-missing-tests-1.log
 tmp_file2=/tmp/check-missing-tests-2.log
 
-function usage() {
+usage() {
   echo "Usage: $(basename $0) <psmdb|pxc|pgo> <full_path_to_jenkinsfile>"
   echo "This script needs to be run from jenkins-pipelines/cloud/jenkins folder!"
 }
 
-function extract_tests() {
+extract_tests() {
   local file=$1
 
   cat ${file} | grep "runTest('" | sed "s/ //g" | sed "s/runTest('//" | sed "s/','.*')$//" | sed "s/')$//" | sort

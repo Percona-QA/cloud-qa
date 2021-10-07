@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function get_mongodb_uri() {
+get_mongodb_uri() {
 	local namespace=$1
 	local cluster=$2
 	local replset=$3
@@ -8,14 +8,12 @@ function get_mongodb_uri() {
 	local password=$5
 	local endpoint=$6
 	local database=$7
-	local user_secrets=""
 	local sharding=""
 	local replset_exposed=""
 
 	if [[ -z ${password} && ${username} == "backup" ]]; then
-		user_secrets=$(kubectl get psmdb "${cluster}" -ojson | jq -r ".spec.secrets.users")
-		password=$(kubectl get secrets "${user_secrets}" -o jsonpath="{.data.MONGODB_BACKUP_PASSWORD}" ${namespace:+--namespace $namespace} | base64 --decode)
-	elif [[ -n ${password} && ${username} == "backup" ]]; then
+		password=$(kubectl get secrets $(kubectl get psmdb ${cluster} -ojsonpath='{.spec.secrets.users}') -ojsonpath='{.data.MONGODB_BACKUP_PASSWORD}' | base64 --decode)
+	elif [[ -n ${password} && -z ${username} ]]; then
 		echo "When specifying password please specify --user also." >&2
 		return 1
 	fi

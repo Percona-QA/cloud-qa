@@ -12,13 +12,9 @@ main() {
 
 	local cluster=""
 	local namespace=""
-	local username_secret="MONGODB_BACKUP_USER"
-	local username=""
-	local password_secret="MONGODB_BACKUP_PASSWORD"
+	local username="root"
 	local password=""
 	local endpoint=""
-	local replset=""
-	local database="admin"
 
 	while [[ $# -gt 0 ]]; do
 		key="$1"
@@ -34,11 +30,6 @@ main() {
 				;;
 			-n | --namespace)
 				namespace="$2"
-				shift
-				shift
-				;;
-			-r | --replset)
-				replset="$2"
 				shift
 				shift
 				;;
@@ -70,7 +61,7 @@ main() {
 	fi
 
 	if [[ -z ${cluster} ]]; then
-		cluster=$(kubectl get psmdb --output name ${namespace:+--namespace $namespace} 2>/dev/null | sed 's:^perconaservermongodb.psmdb.percona.com/::')
+		cluster=$(kubectl get pxc --output name ${namespace:+--namespace $namespace} 2>/dev/null | sed 's:^perconaxtradbcluster.pxc.percona.com/::')
 		if [ "$(echo "${cluster}" | wc -l)" -gt 1 ]; then
 			echo "There's more than one cluster, please specify --cluster <cluster> !"
 			exit 1
@@ -80,19 +71,19 @@ main() {
 		fi
 	fi
 
-	if [[ -z ${username} ]]; then
-		username=$(kubectl get secrets $(kubectl get psmdb "${cluster}" -ojsonpath='{.spec.secrets.users}') -ojsonpath='{.data.'${username_secret}'}' | base64 --decode)
-	fi
-	if [[ -z ${password} ]]; then
-		password=$(kubectl get secrets $(kubectl get psmdb "${cluster}" -ojsonpath='{.spec.secrets.users}') -ojsonpath='{.data.'${password_secret}'}' | base64 --decode)
+	if [[ -z ${endpoint} ]]; then
+		endpoint=$(kubectl get pxc "${cluster}" -ojsonpath='{.status.host}')
 	fi
 
-	mongodb_uri=$(get_mongodb_uri "${namespace}" "${cluster}" "${replset}" "${username}" "${password}" "${endpoint}" "${database}")
-	if [[ -n ${mongodb_uri} ]]; then
+	if [[ -z ${password} ]]; then
+		password=$(kubectl get secrets $(kubectl get pxc "${cluster}" -o jsonpath='{.spec.secretsName}') -o template='{{ .data.'"${username}"' | base64decode }}')
+	fi
+
+	if [[ -n ${endpoint} ]]; then
 		set -x
-		kubectl run -i --rm --tty percona-client-${RANDOM} --image=percona/percona-server-mongodb:4.4 --restart=Never -- mongo "${mongodb_uri}"
+		kubectl run -i --rm --tty percona-client-${RANDOM} --image=percona/percona-xtradb-cluster:8.0 --restart=Never -- mysql -h"${endpoint}" -u"${username}" -p"${password}"
 	else
-		echo "Error getting MongoDB URI!"
+		echo "Error getting MySQL endpoint!"
 		exit 1
 	fi
 }
