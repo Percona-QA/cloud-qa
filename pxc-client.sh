@@ -15,6 +15,8 @@ main() {
 	local username="root"
 	local password=""
 	local endpoint=""
+	local pod=""
+	local port="3306"
 
 	while [[ $# -gt 0 ]]; do
 		key="$1"
@@ -48,6 +50,11 @@ main() {
 				shift
 				shift
 				;;
+			-o | --pod)
+				pod="$2"
+				shift
+				shift
+				;;
 			*)
 				echo "unknown flag or option ${key}"
 				usage
@@ -71,20 +78,22 @@ main() {
 		fi
 	fi
 
-	if [[ -z ${endpoint} ]]; then
+	if [[ -z ${pod} ]]; then
 		endpoint=$(kubectl get pxc "${cluster}" -ojsonpath='{.status.host}')
+	else
+	    endpoint="127.0.0.1"
 	fi
 
 	if [[ -z ${password} ]]; then
-		password=$(kubectl get secrets $(kubectl get pxc "${cluster}" -o jsonpath='{.spec.secretsName}') -o template='{{ .data.'"${username}"' | base64decode }}')
+		password=$(kubectl get secrets $(kubectl get pxc "${cluster}" -ojsonpath='{.spec.secretsName}') -otemplate='{{.data.'"${username}"' | base64decode}}')
 	fi
 
-	if [[ -n ${endpoint} ]]; then
-		set -x
-		kubectl run -i --rm --tty percona-client-${RANDOM} --image=percona/percona-xtradb-cluster:8.0 --restart=Never -- mysql -h"${endpoint}" -u"${username}" -p"${password}"
+	if [[ -z ${pod} ]]; then
+		echo -e "### Connecting to MySQL at host: ${endpoint} ###\n"
+		kubectl run -it --rm percona-client-${RANDOM} --image=percona/percona-xtradb-cluster:8.0 --restart=Never -- mysql -h"${endpoint}" -u"${username}" -p"${password}"
 	else
-		echo "Error getting MySQL endpoint!"
-		exit 1
+		echo -e "### Connecting to MySQL from inside pod: ${pod} ###\n"
+		kubectl exec -it "${pod}" -c pxc -- mysql -h"${endpoint}" -P"${port}" -u"${username}" -p"${password}"
 	fi
 }
 

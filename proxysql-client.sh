@@ -12,13 +12,11 @@ main() {
 
 	local cluster=""
 	local namespace=""
-	local username_secret="MONGODB_BACKUP_USER"
-	local username=""
-	local password_secret="MONGODB_BACKUP_PASSWORD"
+	local username="proxyadmin"
 	local password=""
 	local endpoint=""
-	local replset=""
-	local database="admin"
+	local port="6032"
+	local pod=""
 
 	while [[ $# -gt 0 ]]; do
 		key="$1"
@@ -37,11 +35,6 @@ main() {
 				shift
 				shift
 				;;
-			-r | --replset)
-				replset="$2"
-				shift
-				shift
-				;;
 			-u | --user)
 				username="$2"
 				shift
@@ -52,8 +45,8 @@ main() {
 				shift
 				shift
 				;;
-			-e | --endpoint)
-				endpoint="$2"
+			-o | --pod)
+				pod="$2"
 				shift
 				shift
 				;;
@@ -70,7 +63,7 @@ main() {
 	fi
 
 	if [[ -z ${cluster} ]]; then
-		cluster=$(kubectl get psmdb --output name ${namespace:+--namespace $namespace} 2>/dev/null | sed 's:^perconaservermongodb.psmdb.percona.com/::')
+		cluster=$(kubectl get pxc --output name ${namespace:+--namespace $namespace} 2>/dev/null | sed 's:^perconaxtradbcluster.pxc.percona.com/::')
 		if [ "$(echo "${cluster}" | wc -l)" -gt 1 ]; then
 			echo "There's more than one cluster, please specify --cluster <cluster> !"
 			exit 1
@@ -80,20 +73,22 @@ main() {
 		fi
 	fi
 
-	if [[ -z ${username} ]]; then
-		username=$(kubectl get secrets $(kubectl get psmdb "${cluster}" -ojsonpath='{.spec.secrets.users}') -otemplate='{{.data.'${username_secret}' | base64decode}}')
+	if [[ -z ${pod} ]]; then
+		endpoint="${cluster}-proxysql-unready"
+	else
+	    endpoint="127.0.0.1"
 	fi
 
 	if [[ -z ${password} ]]; then
-		password=$(kubectl get secrets $(kubectl get psmdb "${cluster}" -ojsonpath='{.spec.secrets.users}') -otemplate='{{.data.'${password_secret}' | base64decode}}')
+		password=$(kubectl get secrets $(kubectl get pxc "${cluster}" -ojsonpath='{.spec.secretsName}') -otemplate='{{ .data.'"${username}"' | base64decode }}')
 	fi
 
-	mongodb_uri=$(get_mongodb_uri "${namespace}" "${cluster}" "${replset}" "${username}" "${password}" "${endpoint}" "${database}")
-	if [[ -n ${mongodb_uri} ]]; then
-		kubectl run -i --rm --tty percona-client-${RANDOM} --image=percona/percona-server-mongodb:4.4 --restart=Never -- mongo "${mongodb_uri}"
+	if [[ -z ${pod} ]]; then
+		echo "### Connecting to proxysql admin at host: ${endpoint} ###"
+		kubectl run -it --rm percona-client-${RANDOM} --image=percona:8.0 --restart=Never -- mysql -h"${endpoint}" -u"${username}" -p"${password}" -P"${port}"
 	else
-		echo "Error getting MongoDB URI!"
-		exit 1
+		echo "### Connecting to proxysql admin from inside pod: ${pod} ###"
+	    kubectl exec -it "${pod}" -c proxysql -- mysql -h"${endpoint}" -P"${port}" -u"${username}" -p"${password}"
 	fi
 }
 

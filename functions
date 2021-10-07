@@ -12,15 +12,15 @@ get_mongodb_uri() {
 	local replset_exposed=""
 
 	if [[ -z ${password} && ${username} == "backup" ]]; then
-		password=$(kubectl get secrets $(kubectl get psmdb ${cluster} -ojsonpath='{.spec.secrets.users}') -ojsonpath='{.data.MONGODB_BACKUP_PASSWORD}' | base64 --decode)
+		password=$(kubectl get secrets $(kubectl get psmdb ${cluster} -ojsonpath='{.spec.secrets.users}') -otemplate='{{.data.MONGODB_BACKUP_PASSWORD | base64decode}}')
 	elif [[ -n ${password} && -z ${username} ]]; then
 		echo "When specifying password please specify --user also." >&2
 		return 1
 	fi
 
-	sharding=$(kubectl get psmdb "${cluster}" -o jsonpath='{.spec.sharding.enabled}')
+	sharding=$(kubectl get psmdb "${cluster}" -ojsonpath='{.spec.sharding.enabled}')
 	if [[ ${sharding} == "false" && -z ${replset} ]]; then
-		replset=$(kubectl get psmdb "${cluster}" -o jsonpath='{.spec.replsets[0].name}' ${namespace:+--namespace $namespace})
+		replset=$(kubectl get psmdb "${cluster}" -ojsonpath='{.spec.replsets[0].name}' ${namespace:+--namespace $namespace})
 	fi
 
 	if [[ -n ${replset} ]]; then
@@ -37,7 +37,7 @@ get_mongodb_uri() {
 	fi
 
 	if [[ -z ${endpoint} ]]; then
-		endpoint=$(kubectl get psmdb "${cluster}" -o jsonpath="{.status.host}" ${namespace:+--namespace $namespace})
+		endpoint=$(kubectl get psmdb "${cluster}" -ojsonpath="{.status.host}" ${namespace:+--namespace $namespace})
 		if [[ -n ${replset} && ${replset_exposed} == "false" ]]; then
 			endpoint="${cluster}-${replset}.${namespace}.svc.cluster.local"
 		elif [[ -n ${replset} && ${replset_exposed} == "true" ]]; then

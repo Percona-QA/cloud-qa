@@ -103,7 +103,7 @@ main() {
 	fi
 
 	if [[ -z ${password} ]]; then
-		password=$(kubectl get secrets $(kubectl get pxc "${cluster}" -o jsonpath='{.spec.secretsName}') -o template='{{ .data.'"${username}"' | base64decode }}')
+		password=$(kubectl get secrets $(kubectl get pxc "${cluster}" -ojsonpath='{.spec.secretsName}') -otemplate='{{.data.'"${username}"' | base64decode}}')
 	fi
 
 	if [[ -z ${cluster} ]]; then
@@ -118,13 +118,13 @@ main() {
 	fi
 
 	if [[ ${command} == "insert" ]]; then
-		echo "##### Running ${command} workload on database: ${database} #####"
-		echo "MySQL endpoint: ${endpoint}"
+		echo -e "### Running ${command} workload on database: ${database} ###"
+		echo -e "MySQL endpoint: ${endpoint}\n"
 		kubectl run -it --rm percona-client-${RANDOM} --image=percona:8.0 --restart=Never -- mysql -h"${endpoint}" -u"${username}" -p"${password}" -e "create database ${database};"
 		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --mysql-host="${endpoint}" --mysql-user="${username}" --mysql-password="${password}" --mysql-db="${database}" ${sysbench_opts} prepare
 	elif [[ ${command} == "rw" ]]; then
-		echo "##### Running ${command} workload on database: ${database} #####"
-		echo "MySQL endpoint: ${endpoint}"
+		echo -e "### Running ${command} workload on database: ${database} ###"
+		echo -e "MySQL endpoint: ${endpoint}\n"
 		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --mysql-host="${endpoint}" --mysql-user="${username}" --mysql-password="${password}" --mysql-db="${database}" --time="${time}" ${sysbench_opts} run
 	fi
 }
