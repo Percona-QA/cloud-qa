@@ -114,9 +114,9 @@ main() {
 		if [ "${chaos_mesh}" = true ]; then
 			echo -e "\n### Removing chaos-mesh ###"
 			helm uninstall chaos-mesh --namespace=${namespace}
-			timeout 30 kubectl_bin delete --grace-period=0 --force=true crd awschaos.chaos-mesh.org dnschaos.chaos-mesh.org httpchaos.chaos-mesh.org iochaos.chaos-mesh.org jvmchaos.chaos-mesh.org kernelchaos.chaos-mesh.org networkchaos.chaos-mesh.org podchaos.chaos-mesh.org podiochaos.chaos-mesh.org podnetworkchaos.chaos-mesh.org stresschaos.chaos-mesh.org timechaos.chaos-mesh.org || :
-			timeout 30 kubectl_bin delete --grace-period=0 --force=true clusterrolebinding chaos-mesh-chaos-controller-manager-cluster-level || :
-			timeout 30 kubectl_bin delete --grace-period=0 --force=true clusterrole chaos-mesh-chaos-controller-manager-cluster-level chaos-mesh-chaos-controller-manager-target-namespace || :
+			timeout 30 kubectl delete --grace-period=0 --force=true crd awschaos.chaos-mesh.org dnschaos.chaos-mesh.org httpchaos.chaos-mesh.org iochaos.chaos-mesh.org jvmchaos.chaos-mesh.org kernelchaos.chaos-mesh.org networkchaos.chaos-mesh.org podchaos.chaos-mesh.org podiochaos.chaos-mesh.org podnetworkchaos.chaos-mesh.org stresschaos.chaos-mesh.org timechaos.chaos-mesh.org || :
+			timeout 30 kubectl delete --grace-period=0 --force=true clusterrolebinding chaos-mesh-chaos-controller-manager-cluster-level || :
+			timeout 30 kubectl delete --grace-period=0 --force=true clusterrole chaos-mesh-chaos-controller-manager-cluster-level chaos-mesh-chaos-controller-manager-target-namespace || :
 			kubectl delete --grace-period=0 --force=true namespace ${namespace}
 		fi
 
