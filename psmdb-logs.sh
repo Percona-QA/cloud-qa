@@ -31,7 +31,7 @@ main() {
 
 	pod=$(kubectl get pods -l name=percona-server-mongodb-operator --output name ${namespace:+--namespace $namespace})
 	if [ -n "${pod}" ]; then
-		kubectl logs "${pod}" "${namespace:+--namespace $namespace}"
+		kubectl logs "${pod}" ${namespace:+--namespace $namespace}
 	else
 		echo "Operator pod is not found in the namespace!"
 		exit 1

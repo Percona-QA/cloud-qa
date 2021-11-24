@@ -1,0 +1,13 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: pod-failure-example
+spec:
+  action: pod-failure
+  mode: one
+  value: ""
+  duration: "60s"
+  selector:
+    pods:
+      pxc-test:
+        - percona-xtradb-cluster-operator-569867b9cd-bbd9l

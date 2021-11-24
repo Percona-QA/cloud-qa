@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-CHAOS_MESH_VER="0.5.1"
-CERT_MANAGER_VER="1.5.2"
+CHAOS_MESH_VER="2.0.4"
+CERT_MANAGER_VER="1.5.4"
 
 usage() {
 	cat <<EOF
@@ -113,10 +113,14 @@ main() {
 
 		if [ "${chaos_mesh}" = true ]; then
 			echo -e "\n### Removing chaos-mesh ###"
+			kubectl delete podchaos --all --all-namespaces || :
+			kubectl delete networkchaos --all --all-namespaces || :
 			helm uninstall chaos-mesh --namespace=${namespace}
-			timeout 30 kubectl delete --grace-period=0 --force=true crd awschaos.chaos-mesh.org dnschaos.chaos-mesh.org httpchaos.chaos-mesh.org iochaos.chaos-mesh.org jvmchaos.chaos-mesh.org kernelchaos.chaos-mesh.org networkchaos.chaos-mesh.org podchaos.chaos-mesh.org podiochaos.chaos-mesh.org podnetworkchaos.chaos-mesh.org stresschaos.chaos-mesh.org timechaos.chaos-mesh.org || :
+			timeout 30 kubectl delete --grace-period=0 --force=true crd awschaos.chaos-mesh.org dnschaos.chaos-mesh.org gcpchaos.chaos-mesh.org httpchaos.chaos-mesh.org iochaos.chaos-mesh.org jvmchaos.chaos-mesh.org kernelchaos.chaos-mesh.org networkchaos.chaos-mesh.org podchaos.chaos-mesh.org podhttpchaos.chaos-mesh.org podiochaos.chaos-mesh.org podnetworkchaos.chaos-mesh.org schedules.chaos-mesh.org stresschaos.chaos-mesh.org timechaos.chaos-mesh.org workflownodes.chaos-mesh.org workflows.chaos-mesh.org || :
 			timeout 30 kubectl delete --grace-period=0 --force=true clusterrolebinding chaos-mesh-chaos-controller-manager-cluster-level || :
 			timeout 30 kubectl delete --grace-period=0 --force=true clusterrole chaos-mesh-chaos-controller-manager-cluster-level chaos-mesh-chaos-controller-manager-target-namespace || :
+			timeout 30 kubectl delete --grace-period=0 --force=true MutatingWebhookConfiguration chaos-mesh-mutation
+			timeout 30 kubectl delete --grace-period=0 --force=true ValidatingWebhookConfiguration chaos-mesh-validation validate-auth
 			kubectl delete --grace-period=0 --force=true namespace ${namespace}
 		fi
 
