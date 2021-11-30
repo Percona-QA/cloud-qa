@@ -29,7 +29,7 @@ main() {
 		esac
 	done
 
-	pod=$(kubectl get pods -l app.kubernetes.io/name=percona-xtradb-cluster-operator --output name ${namespace:+--namespace $namespace})
+	pod=$(kubectl get pods -l app.kubernetes.io/name=percona-xtradb-cluster-operator -l app.kubernetes.io/name=pxc-operator --output name ${namespace:+--namespace $namespace})
 	if [ -n "${pod}" ]; then
 		kubectl logs "${pod}" ${namespace:+--namespace $namespace}
 	else
