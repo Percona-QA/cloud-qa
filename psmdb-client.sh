@@ -90,6 +90,7 @@ main() {
 
 	mongodb_uri=$(get_mongodb_uri "${namespace}" "${cluster}" "${replset}" "${username}" "${password}" "${endpoint}" "${database}")
 	if [[ -n ${mongodb_uri} ]]; then
+		echo "mongodb_uri: ${mongodb_uri}"
 		kubectl run -i --rm --tty percona-client-${RANDOM} --image=percona/percona-server-mongodb:4.4 --restart=Never -- mongo "${mongodb_uri}"
 	else
 		echo "Error getting MongoDB URI!"
