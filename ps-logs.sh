@@ -29,7 +29,7 @@ main() {
 		esac
 	done
 
-	pod=$(kubectl get pods -l control-plane=percona-server-for-mysql-operator --output name ${namespace:+--namespace $namespace})
+	pod=$(kubectl get pods -l app.kubernetes.io/name=percona-server-mysql-operator --output name ${namespace:+--namespace $namespace})
 	if [ -n "${pod}" ]; then
 		kubectl logs "${pod}" ${namespace:+--namespace $namespace}
 	else
