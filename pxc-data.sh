@@ -106,17 +106,6 @@ main() {
 		password=$(kubectl get secrets $(kubectl get pxc "${cluster}" -ojsonpath='{.spec.secretsName}') -otemplate='{{.data.'"${username}"' | base64decode}}')
 	fi
 
-	if [[ -z ${cluster} ]]; then
-		cluster=$(kubectl get psmdb --output name ${namespace:+--namespace $namespace} 2>/dev/null | sed 's:^perconaservermongodb.psmdb.percona.com/::')
-		if [ "$(echo "${cluster}" | wc -l)" -gt 1 ]; then
-			echo "There's more than one cluster, please specify --cluster <cluster> !"
-			exit 1
-		elif [ -z "${cluster}" ]; then
-			echo "No cluster available in the namespace!"
-			exit 1
-		fi
-	fi
-
 	if [[ ${command} == "insert" ]]; then
 		echo -e "### Running ${command} workload on database: ${database} ###"
 		echo -e "MySQL endpoint: ${endpoint}\n"
