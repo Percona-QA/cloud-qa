@@ -68,7 +68,7 @@ main() {
 	fi
 
 	if [[ -z ${cluster} ]]; then
-		cluster=$(kubectl get ps --output name ${namespace:+--namespace $namespace} 2>/dev/null | sed 's:^perconaserverformysql.ps.percona.com/::')
+		cluster=$(kubectl get ps --output name ${namespace:+--namespace $namespace} 2>/dev/null | sed 's:^perconaservermysql.ps.percona.com/::')
 		if [ "$(echo "${cluster}" | wc -l)" -gt 1 ]; then
 			echo "There's more than one cluster, please specify --cluster <cluster> !"
 			exit 1
