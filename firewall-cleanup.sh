@@ -7,16 +7,17 @@ readarray -t lines < <(gcloud compute firewall-rules list --format='table(name, 
 active_clusters=$(gcloud container clusters list 2>/dev/null | tail -n +2 | awk '{print $1}')
 
 for line in "${lines[@]}"; do
-	key=$(echo "$line" | awk '{print $1}')
-	value=$(echo "$line" | awk '{print $2}')
-	firewalls[$key]=$value
+	key=$(echo "${line}" | awk '{print $1}')
+	value=$(echo "${line}" | awk '{print $2}')
+	firewalls[${key}]=${value}
 done
 
 for firewall in "${!firewalls[@]}"; do
-	if [ -n "${firewalls[$firewall]}" ]; then
-		if [ ! $(echo "${active_clusters}" | grep "${firewalls[$firewall]}") ]; then
-			echo "inactive_fw_rule: $firewall"
-			echo "inactive_cluster: ${firewalls[$firewall]}"
+	cluster=${firewalls[$firewall]}
+	if [ -n "${cluster}" ]; then
+		if [ ! $(echo "${active_clusters}" | grep "${cluster}") ]; then
+			echo "inactive_fw_rule: ${firewall}"
+			echo "inactive_cluster: ${cluster}"
 		fi
 	fi
 done
