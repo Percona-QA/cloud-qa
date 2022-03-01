@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# run with delete parameter to actually start the cleanup
+command="$1"
+
 declare -A firewalls
 
 readarray -t lines < <(gcloud compute firewall-rules list --format='table(name, targetTags.list():label=TARGET_TAGS)' | tail -n +2 | sed 's/ gke-/ /' | sed 's/-.\{8\}-node//')
@@ -15,9 +18,13 @@ done
 for firewall in "${!firewalls[@]}"; do
 	cluster=${firewalls[$firewall]}
 	if [ -n "${cluster}" ]; then
-		if [ ! $(echo "${active_clusters}" | grep "${cluster}") ]; then
+		if [ ! $(echo "${active_clusters}" | grep "${cluster}") -a $(echo "${cluster}" | grep -vE "http|default") ]; then
 			echo "inactive_fw_rule: ${firewall}"
 			echo "inactive_cluster: ${cluster}"
+			if [ "${command}" == "delete" ]; then
+				gcloud compute firewall-rules delete -q "${firewall}"
+			fi
+			echo "---"
 		fi
 	fi
 done
