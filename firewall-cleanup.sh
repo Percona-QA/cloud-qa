@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-
 # run with delete parameter to actually start the cleanup
+# second parameter can be cluster name for which to delete fw rules
+
 command="$1"
+del_cluster="$2"
 
 declare -A firewalls
 
@@ -12,7 +14,9 @@ active_clusters=$(gcloud container clusters list 2>/dev/null | tail -n +2 | awk 
 for line in "${lines[@]}"; do
 	key=$(echo "${line}" | awk '{print $1}')
 	value=$(echo "${line}" | awk '{print $2}')
-	firewalls[${key}]=${value}
+	if [ -z "${del_cluster}" -o "${del_cluster}" == "${value}" ]; then
+		firewalls[${key}]=${value}
+	fi
 done
 
 for firewall in "${!firewalls[@]}"; do
