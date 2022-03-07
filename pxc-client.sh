@@ -85,7 +85,11 @@ main() {
 	fi
 
 	if [[ -z ${password} ]]; then
-		password=$(kubectl get secrets $(kubectl get pxc "${cluster}" -ojsonpath='{.spec.secretsName}') -otemplate='{{.data.'"${username}"' | base64decode}}')
+		secrets_name=$(kubectl get pxc "${cluster}" -ojsonpath='{.spec.secretsName}')
+		if [[ -z ${secrets_name} ]]; then
+			secrets_name="${cluster}-secrets"
+		fi
+		password=$(kubectl get secrets ${secrets_name} -otemplate='{{.data.'"${username}"' | base64decode}}')
 	fi
 
 	if [[ -z ${pod} ]]; then
