@@ -1,6 +1,10 @@
 #!/bin/bash
 prefix=${1:-psmdb}
 
+for binary in gcloud kubectl
+do
+  command -v $binary >/dev/null 2>&1 || { echo >&2 "The script requires $binary but it's not installed.  Aborting."; exit 1; }
+done
 gcloud container clusters create $prefix-mcs-1 \
 --region=europe-west1 \
 --enable-ip-alias \

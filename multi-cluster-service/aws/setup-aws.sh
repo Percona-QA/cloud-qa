@@ -4,6 +4,12 @@ export CLUSTER_REPL=${2:-"psmdb-cluster-mcs-setup-test-2"}
 export CLUSTER_MAIN_CIDR=10.10.0.0/16
 export CLUSTER_REPL_CIDR=10.12.0.0/16
 
+
+for binary in eksctl aws kubectl
+do
+  command -v $binary >/dev/null 2>&1 || { echo >&2 "The script requires $binary but it's not installed.  Aborting."; exit 1; }
+done
+
 echo "########################## Create cluster 1 ############################"
 eksctl create cluster -f eks-cluster-mcs-1.yaml
 
