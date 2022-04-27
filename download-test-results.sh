@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 
 usage() {
-	if [ $# -ne 2 ]; then
-		echo "Usage:  $(basename "$0") --product psmdbo/pxco/pgo --commit xxxzzz"
-		exit 1
-	fi
+	echo "Usage:  $(basename "$0") --product psmdbo/pxco/pgo --commit xxxzzz"
+	exit 1
 }
 
 main() {
 	local jobs=()
+
+	if [ $# -ne 4 ]; then
+		echo "Usage:  $(basename "$0") --product psmdbo/pxco/pgo --commit xxxzzz"
+		exit 1
+	fi
 
 	while [[ $# -gt 0 ]]; do
 		key="$1"
@@ -37,13 +40,13 @@ main() {
 
 	case "${product}" in
 		psmdbo)
-	        jobs=("psmdb-operator-gke-version" "psmdb-operator-gke-latest" "psmdb-operator-aws-openshift-latest" "psmdb-operator-aws-openshift-4" "psmdb-operator-eks" "psmdb-operator-minikube")
+			jobs=("psmdb-operator-gke-version" "psmdb-operator-gke-latest" "psmdb-operator-aws-openshift-latest" "psmdb-operator-aws-openshift-4" "psmdb-operator-eks" "psmdb-operator-minikube")
 			;;
 		pxco)
-	        jobs=("pxc-operator-gke-version" "pxc-operator-gke-latest" "pxc-operator-aws-openshift-latest" "pxc-operator-aws-openshift-4" "pxc-operator-eks" "pxc-operator-minikube")
+			jobs=("pxc-operator-gke-version" "pxc-operator-gke-latest" "pxc-operator-aws-openshift-latest" "pxc-operator-aws-openshift-4" "pxc-operator-eks" "pxc-operator-minikube")
 			;;
 		pgo)
-	        jobs=("pgo-operator-gke-version" "pgo-operator-gke-latest" "pgo-operator-aws-openshift-latest" "pgo-operator-aws-openshift-4" "pgo-operator-eks" "pgo-operator-minikube")
+			jobs=("pgo-operator-gke-version" "pgo-operator-gke-latest" "pgo-operator-aws-openshift-latest" "pgo-operator-aws-openshift-4" "pgo-operator-eks" "pgo-operator-minikube")
 			;;
 	esac
 
