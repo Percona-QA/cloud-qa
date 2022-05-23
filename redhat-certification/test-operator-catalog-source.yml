@@ -1,0 +1,13 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: percona-mongodb-operator
+  namespace: marketplace-test
+spec:
+  displayName: Test Operators
+  updateStrategy:
+    registryPoll:
+      interval: 5m
+  image: docker.io/tishina/percona-server-mongodb-operator-bundle.v1.12.0-index:latest
+  publisher: Red Hat Partner
+  sourceType: grpc
