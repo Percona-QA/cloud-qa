@@ -22,7 +22,7 @@ done
 for firewall in "${!firewalls[@]}"; do
 	cluster=${firewalls[$firewall]}
 	if [ -n "${cluster}" ]; then
-		if [ ! $(echo "${active_clusters}" | grep "${cluster}") -a $(echo "${cluster}" | grep -vE "http|default") ]; then
+		if [ ! $(echo "${active_clusters}" | grep "${cluster}") -a $(echo "${cluster}" | grep -vE "http|default|ssh") ]; then
 			echo "inactive_fw_rule: ${firewall}"
 			echo "inactive_cluster: ${cluster}"
 			if [ "${command}" == "delete" ]; then

@@ -30,6 +30,9 @@ main() {
 	done
 
 	pod=$(kubectl get pods -l app.kubernetes.io/name=percona-server-mysql-operator --output name ${namespace:+--namespace $namespace})
+	if [ -z "${pod}" ]; then
+		pod=$(kubectl get pods -l app.kubernetes.io/name=ps-operator --output name ${namespace:+--namespace $namespace})
+	fi
 	if [ -n "${pod}" ]; then
 		kubectl logs "${pod}" ${namespace:+--namespace $namespace}
 	else
