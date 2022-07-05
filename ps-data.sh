@@ -15,6 +15,7 @@ main() {
 	local username="root"
 	local password=""
 	local endpoint=""
+	local port="3306"
 	local database="sbtest"
 	local command=""
 	local time="120"
@@ -99,8 +100,12 @@ main() {
 	fi
 
 	if [[ -z ${endpoint} ]]; then
-	    endpoint="${cluster}-mysql-primary"
+		endpoint=$(kubectl get ps "${cluster}" -ojsonpath='{.status.host}')
 	fi
+
+	if [[ $(echo "${endpoint}" | grep "router") ]]; then
+        port="6446"
+    fi
 
 	if [[ -z ${password} ]]; then
 		password=$(kubectl get secrets $(kubectl get ps "${cluster}" -ojsonpath='{.spec.secretsName}') -otemplate='{{.data.'"${username}"' | base64decode}}')
@@ -108,13 +113,13 @@ main() {
 
 	if [[ ${command} == "insert" ]]; then
 		echo -e "### Running ${command} workload on database: ${database} ###"
-		echo -e "MySQL endpoint: ${endpoint}\n"
-		kubectl run -it --rm percona-client-${RANDOM} --image=percona:8.0 --restart=Never -- mysql -h"${endpoint}" -u"${username}" -p"${password}" -e "create database ${database};"
-		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --mysql-host="${endpoint}" --mysql-user="${username}" --mysql-password="${password}" --mysql-db="${database}" ${sysbench_opts} prepare
+		echo -e "MySQL endpoint: ${endpoint}:${port}\n"
+		kubectl run -it --rm percona-client-${RANDOM} --image=percona:8.0 --restart=Never -- mysql -h"${endpoint}" -u"${username}" -p"${password}" -P"${port}" -e "create database ${database};"
+		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --mysql-host="${endpoint}" --mysql-port="${port}" --mysql-user="${username}" --mysql-password="${password}" --mysql-db="${database}" ${sysbench_opts} prepare
 	elif [[ ${command} == "rw" ]]; then
 		echo -e "### Running ${command} workload on database: ${database} ###"
 		echo -e "MySQL endpoint: ${endpoint}\n"
-		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --mysql-host="${endpoint}" --mysql-user="${username}" --mysql-password="${password}" --mysql-db="${database}" --time="${time}" ${sysbench_opts} run
+		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --mysql-host="${endpoint}" -mysql-port="${port}" --mysql-user="${username}" --mysql-password="${password}" --mysql-db="${database}" --time="${time}" ${sysbench_opts} run
 	fi
 }
 
