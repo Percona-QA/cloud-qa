@@ -107,7 +107,7 @@ main() {
 		kubectl run -it --rm percona-client-${RANDOM} --image=percona/percona-server:8.0 --restart=Never -- mysql -h"${endpoint}" -P"${port}" -u"${username}" -p"${password}"
 	else
 		echo -e "### Connecting to MySQL from inside pod: ${pod} ###\n"
-		kubectl exec -it "${pod}" -c pxc -- mysql -h"${endpoint}" -P"${port}" -u"${username}" -p"${password}"
+		kubectl exec -it "${pod}" -c mysql -- mysql -h"${endpoint}" -P"${port}" -u"${username}" -p"${password}"
 	fi
 }
 
