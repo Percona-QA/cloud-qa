@@ -119,7 +119,7 @@ main() {
 	elif [[ ${command} == "rw" ]]; then
 		echo -e "### Running ${command} workload on database: ${database} ###"
 		echo -e "MySQL endpoint: ${endpoint}\n"
-		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --mysql-host="${endpoint}" -mysql-port="${port}" --mysql-user="${username}" --mysql-password="${password}" --mysql-db="${database}" --time="${time}" ${sysbench_opts} run
+		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --mysql-host="${endpoint}" --mysql-port="${port}" --mysql-user="${username}" --mysql-password="${password}" --mysql-db="${database}" --time="${time}" ${sysbench_opts} run
 	fi
 }
 
