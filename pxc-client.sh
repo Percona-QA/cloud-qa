@@ -78,10 +78,12 @@ main() {
 		fi
 	fi
 
-	if [[ -z ${pod} ]]; then
-		endpoint=$(kubectl get pxc "${cluster}" -ojsonpath='{.status.host}')
-	else
-	    endpoint="127.0.0.1"
+	if [[ -z ${endpoint} ]]; then
+		if [[ -z ${pod} ]]; then
+			endpoint=$(kubectl get pxc "${cluster}" -ojsonpath='{.status.host}')
+		else
+			endpoint="127.0.0.1"
+		fi
 	fi
 
 	if [[ -z ${password} ]]; then

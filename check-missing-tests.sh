@@ -13,7 +13,7 @@ usage() {
 extract_tests() {
   local file=$1
 
-  cat ${file} | grep "runTest('" | sed "s/ //g" | sed "s/runTest('//" | sed "s/','.*')$//" | sed "s/')$//" | sort
+  cat ${file} | grep "runTest('" | sed "s/ //g" | sed "s/runTest('//" | sed "s/','.*')$//" | sed "s/')$//" | sort | uniq
 }
 
 if [[ $# -ne 2 ]]; then
