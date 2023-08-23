@@ -1,0 +1,21 @@
+apiVersion: pxc.percona.com/v1
+kind: PerconaXtraDBClusterRestore
+metadata:
+  name: restore-pitr-aws-latest
+spec:
+  pxcCluster: cluster2
+  backupSource:
+      destination: s3://tomislav-backup-test/cluster1-2021-01-28-17:33:59-full
+      s3:
+        bucket: tomislav-backup-test
+        credentialsSecret: my-cluster-name-backup-s3
+        endpointUrl: https://s3.us-west-2.amazonaws.com
+        region: us-west-2
+  pitr:
+    type: latest
+    backupSource:
+      s3:
+        bucket: tomislav-backup-test/binlogs
+        credentialsSecret: my-cluster-name-backup-s3
+        endpointUrl: https://s3.us-west-2.amazonaws.com
+        region: us-west-2

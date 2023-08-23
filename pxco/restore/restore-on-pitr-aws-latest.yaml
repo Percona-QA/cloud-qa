@@ -1,0 +1,11 @@
+apiVersion: pxc.percona.com/v1
+kind: PerconaXtraDBClusterRestore
+metadata:
+  name: restore-pitr-aws-latest
+spec:
+  pxcCluster: cluster1
+  backupName: backup1
+  pitr:
+    type: latest
+    backupSource:
+      storageName: "s3-us-west-binlogs"
