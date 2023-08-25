@@ -58,10 +58,6 @@ transfer-managed-config() {
     kubectl get secret internal-$managed-users -o yaml |
 		yq eval 'del(.metadata) |
         	.metadata.name="'internal-$unmanaged-users'"'
-    echo "---"
-    kubectl get secret $managed-mongodb-encryption-key -o yaml |
-		yq eval 'del(.metadata) |
-        	.metadata.name="'$unmanaged-mongodb-encryption-key'"'
 }
 
 transfer-managed-config $@
