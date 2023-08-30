@@ -8,6 +8,7 @@ usage() {
 main() {
 	local namespace=""
 	local pod=""
+	local args=""
 
 	while [[ $# -gt 0 ]]; do
 		key="$1"
@@ -19,6 +20,10 @@ main() {
 			-n | --namespace)
 				namespace="$2"
 				shift
+				shift
+				;;
+			-f | --follow)
+				args="${args:--f}"
 				shift
 				;;
 			*)
@@ -34,7 +39,7 @@ main() {
 		pod=$(kubectl get pods -l app.kubernetes.io/name=psmdb-operator --output name ${namespace:+--namespace $namespace})
 	fi
 	if [ -n "${pod}" ]; then
-		kubectl logs "${pod}" ${namespace:+--namespace $namespace}
+		kubectl logs "${pod}" ${namespace:+--namespace $namespace} ${args:-}
 	else
 		echo "Operator pod is not found in the namespace!"
 		exit 1
