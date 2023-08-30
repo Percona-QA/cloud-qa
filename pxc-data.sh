@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-src_dir=$(realpath $(dirname $0))
-source ${src_dir}/functions
-
 usage() {
 	echo "Usage:  $(basename "$0") --namespace <ns> --cluster <cluster> --insert/--rw --database <db>"
 	exit 1

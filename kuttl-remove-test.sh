@@ -23,7 +23,7 @@ do
       new_number=$(expr "$number" - 1)
       new_number_padded=$(printf "%02d" "$new_number")
       new_file=$(echo "$file" | sed "s/^$number-/$new_number_padded-/")
-      echo "moving: $file to: $new_file"
+      echo "$file -> $new_file"
       mv "$file" "$new_file"
   fi
 done
