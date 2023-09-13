@@ -18,6 +18,9 @@ main() {
 	local replset=""
 	local database="ycsb_test"
 	local command=""
+	local recordcount=100000
+	local operationcount=1000000
+	local threads=32
 
 	while [[ $# -gt 0 ]]; do
 		key="$1"
@@ -69,6 +72,21 @@ main() {
 				command="rw"
 				shift
 				;;
+			--recordcount)
+				recordcount="$2"
+				shift
+				shift
+				;;
+			--operationcount)
+				operationcount="$2"
+				shift
+				shift
+				;;
+			--threads)
+				threads="$2"
+				shift
+				shift
+				;;
 			*)
 				echo "unknown flag or option ${key}"
 				usage
@@ -106,11 +124,11 @@ main() {
 	if [[ ${command} == "insert" ]]; then
 		echo -e "### Running ${command} workload on database: ${database} ###"
 		echo -e "mongodb_uri: ${mongodb_uri}\n"
-		kubectl run -it --rm ycsb-client-${RANDOM} --image=plavi/test:ycsb --restart=Never -- load mongodb -s -P /ycsb/workloads/workloada -p recordcount=10000 -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
+		kubectl run -it --rm ycsb-client-${RANDOM} --image=plavi/test:ycsb --restart=Never -- load mongodb -s -P /ycsb/workloads/workloada -p recordcount=${recordcount} -threads ${threads} -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
 	elif [[ ${command} == "rw" ]]; then
 		echo -e "### Running ${command} workload on database: ${database} ###"
 		echo -e "mongodb_uri: ${mongodb_uri}\n"
-		kubectl run -it --rm ycsb-client-${RANDOM} --image=plavi/test:ycsb --restart=Never -- run mongodb -s -P /ycsb/workloads/workloadb -p recordcount=10000 -p operationcount=1000000 -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
+		kubectl run -it --rm ycsb-client-${RANDOM} --image=plavi/test:ycsb --restart=Never -- run mongodb -s -P /ycsb/workloads/workloadb -p recordcount=${recordcount} -p operationcount=${operationcount} -threads 8 -p mongodb.url="${mongodb_uri}" -p mongodb.auth="true"
 	fi
 }
 
