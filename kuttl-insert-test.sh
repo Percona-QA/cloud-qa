@@ -11,7 +11,7 @@ if [ -z "$1" ]
 fi
 
 # Loop through the files in descending order and rename them
-for file in $(ls -v -r [0-9][0-9]-*)
+for file in $(ls -v -r [0-9][0-9]-* | grep -vE "9[0-9]+-")
 do
   # Get the number from the beginning of the filename
   number=$(echo "$file" | cut -d '-' -f 1)
