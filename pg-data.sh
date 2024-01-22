@@ -4,18 +4,21 @@ src_dir=$(realpath $(dirname $0))
 source ${src_dir}/functions
 
 usage() {
-	echo "Usage:  $(basename "$0") --namespace <ns> --cluster <cluster> --endpoint <service>"
+	echo "Usage:  $(basename "$0") --namespace <ns> --cluster <cluster> --insert/--rw --database <db>"
 	exit 1
 }
 
 main() {
+
 	local cluster=""
 	local namespace=""
 	local username="postgres"
 	local password=""
 	local endpoint=""
-	local pod=""
-	local port=""
+	local database="sbtest"
+	local command=""
+	local time="120"
+	local sysbench_opts="--rand-type=pareto --report-interval=1 --tables=4 --table_size=500000 --threads=4"
 
 	while [[ $# -gt 0 ]]; do
 		key="$1"
@@ -49,13 +52,21 @@ main() {
 				shift
 				shift
 				;;
-			-o | --pod)
-				pod="$2"
+			-d | --database)
+				database="$2"
 				shift
 				shift
 				;;
-			-P | --port)
-				port="$2"
+			-i | --insert)
+				command="insert"
+				shift
+				;;
+			-w | --rw)
+				command="rw"
+				shift
+				;;
+			-t | --time)
+				time="$2"
 				shift
 				shift
 				;;
@@ -66,6 +77,11 @@ main() {
 				;;
 		esac
 	done
+
+	if [[ -z ${command} ]]; then
+		echo "Please specify either --insert or --rw parameter!"
+		exit 1
+	fi
 
 	if [[ -z ${namespace} ]]; then
 		namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}')
@@ -101,12 +117,15 @@ main() {
 		password=$(kubectl get secrets ${cluster}-pguser-${username} --template='{{.data.password | base64decode}}{{"\n"}}')
 	fi
 
-	if [[ -z ${pod} ]]; then
-		echo -e "### Connecting to PostgreSQL at host: ${endpoint}:${port} ###\n"
-		kubectl run -it --rm percona-client-${RANDOM} --image=perconalab/percona-distribution-postgresql:15 --restart=Never -- bash -c "PGPASSWORD='${password}' psql -h${endpoint} -p${port} -U${username}"
-	else
-		echo -e "### Connecting to PostgreSQL from inside pod: ${pod} ###\n"
-		kubectl exec -it "${pod}" -c mysql -- PGPASSWORD='${password}' psql -h"${endpoint}" -P"${port}" -U"${username}"
+	if [[ ${command} == "insert" ]]; then
+		echo -e "### Running ${command} workload on database: ${database} ###"
+		echo -e "PG endpoint: ${endpoint}\n"
+		kubectl run -it --rm percona-client-${RANDOM} --image=perconalab/percona-distribution-postgresql:15 --restart=Never -- bash -c "PGPASSWORD='${password}' psql -h${endpoint} -p${port} -U${username} -c 'CREATE DATABASE ${database};'"
+		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --db-driver=pgsql --pgsql-host="${endpoint}" --pgsql-port=${port} --pgsql-user=${username} --pgsql-password=${password} --pgsql-db=${database} ${sysbench_opts} prepare
+	elif [[ ${command} == "rw" ]]; then
+		echo -e "### Running ${command} workload on database: ${database} ###"
+		echo -e "MySQL endpoint: ${endpoint}\n"
+		kubectl run -it --rm sysbench-client-${RANDOM} --image=perconalab/sysbench:latest --restart=Never -- sysbench oltp_read_write --db-driver=pgsql --pgsql-host="${endpoint}" --pgsql-port=${port} --pgsql-user=${username} --pgsql-password=${password} --pgsql-db=${database} --time="${time}" ${sysbench_opts} run
 	fi
 }
 

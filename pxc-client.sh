@@ -93,10 +93,10 @@ main() {
 
 	if [[ -z ${pod} ]]; then
 		echo -e "### Connecting to MySQL at host: ${endpoint} ###\n"
-		kubectl run -it --rm percona-client-${RANDOM} --image=percona/percona-xtradb-cluster:8.0 --restart=Never -- mysql -h"${endpoint}" -u"${username}" -p"${password}"
+		kubectl run -it --rm percona-client-${RANDOM} --image=percona/percona-xtradb-cluster:8.0 --restart=Never -- mysql -h"${endpoint}" -u"${username}" -p"${password}" --skip-binary-as-hex
 	else
 		echo -e "### Connecting to MySQL from inside pod: ${pod} ###\n"
-		kubectl exec -it "${pod}" -c pxc -- mysql -h"${endpoint}" -P"${port}" -u"${username}" -p"${password}"
+		kubectl exec -it "${pod}" -c pxc -- mysql -h"${endpoint}" -P"${port}" -u"${username}" -p"${password}" --skip-binary-as-hex
 	fi
 }
 
