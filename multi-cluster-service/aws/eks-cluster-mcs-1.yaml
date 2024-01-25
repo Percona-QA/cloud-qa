@@ -2,9 +2,9 @@
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 metadata:
-  name: psmdb-cluster-mcs-setup-test-1
+  name: psmdb-cluster-cross-test-1
   region: eu-west-3
-  version: "1.21"
+  version: "1.25"
 
 vpc:
   cidr: 10.10.0.0/16

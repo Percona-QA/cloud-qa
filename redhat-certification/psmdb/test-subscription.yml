@@ -5,6 +5,6 @@ metadata:
 spec:
   channel: stable
   installPlanApproval: Automatic
-  name: percona-server-mongodb-operator-certified
+  name: percona-server-mongodb-operator-community
   source: percona-mongodb-operator
-  sourceNamespace: marketplace-test
+  sourceNamespace: marketplace-community

@@ -4,7 +4,7 @@ kind: ClusterConfig
 metadata:
   name: psmdb-cluster-mcs-setup-test-2
   region: eu-west-3
-  version: "1.21"
+  version: "1.25"
 vpc:
   cidr: 10.12.0.0/16
 nodeGroups:
