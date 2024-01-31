@@ -1,0 +1,3 @@
+docker build --platform=linux/amd64 . -f bundle-2.3.2.Dockerfile -t tishina/percona-postgresql-operator:2.3.2-community-bundle
+docker push tishina/percona-postgresql-operator:2.3.2-community-bundle
+darwin-amd64-opm index add --bundles docker.io/tishina/percona-postgresql-operator:2.3.2-community-bundle  --tag tishina/percona-postgresql-operator-bundle.v2.3.2-index:latest --build-tool docker --debug
