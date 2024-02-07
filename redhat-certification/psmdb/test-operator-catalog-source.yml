@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: percona-mongodb-operator
-  namespace: marketplace-test
+  namespace: marketplace-community
 spec:
   displayName: Test Operators
   updateStrategy:

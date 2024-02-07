@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha2
 kind: OperatorGroup
 metadata:
   name: my-group
-  namespace: marketplace-test
+  namespace: marketplace-community
 spec:
   targetNamespaces:
-  - marketplace-test
+  - marketplace-community
